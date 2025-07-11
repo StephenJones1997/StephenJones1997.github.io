@@ -1,318 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/">
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sheet Music Composer</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #f5f5f5;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    h1 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 30px;
-    }
-    
-    .toolbar {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 30px;
-      padding: 15px;
-      background: #f8f8f8;
-      border-radius: 8px;
-    }
-    
-    .note-btn {
-      padding: 10px 15px;
-      border: 2px solid #333;
-      background: white;
-      cursor: pointer;
-      border-radius: 5px;
-      font-weight: bold;
-      transition: all 0.3s;
-    }
-    
-    .note-btn:hover, .note-btn.active {
-      background: #333;
-      color: white;
-    }
-    
-    .staff-container {
-      position: relative;
-      width: 100%;
-      height: 400px;
-      margin: 20px 0;
-      background: white;
-      border: 1px solid #ddd;
-      overflow: visible;
-    }
-    
-    .staff {
-      position: absolute;
-      width: 90%;
-      left: 5%;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    
-    .staff-line {
-      width: 100%;
-      height: 2px;
-      background: #333;
-      margin: 12px 0;
-    }
-    
-    .treble-clef {
-      position: absolute;
-      left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 60px;
-      font-weight: bold;
-      color: #333;
-    }
-    
-    .note {
-      position: absolute;
-      cursor: move;
-      user-select: none;
-      font-size: 30px;
-      color: #333;
-      z-index: 10;
-    }
-    
-    .note.whole {
-      font-size: 25px;
-    }
-    
-    .note.half {
-      font-size: 30px;
-    }
-    
-    .note.quarter {
-      font-size: 30px;
-    }
-    
-    .ledger-line {
-      position: absolute;
-      width: 40px;
-      height: 2px;
-      background: #333;
-      z-index: 5;
-    }
-    
-    .controls {
-      text-align: center;
-      margin-top: 20px;
-    }
-    
-    .clear-btn {
-      padding: 10px 20px;
-      background: #ff4444;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    
-    .clear-btn:hover {
-      background: #dd2222;
-    }
-    
-    .instructions {
-      background: #e8f4f8;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border-left: 4px solid #2196F3;
-    }
-  </style>
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="sheet_music_app">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>sheet_music_app</title>
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <div class="container">
-    <h1>🎼 Sheet Music Composer</h1>
-    
-    <div class="instructions">
-      <strong>Instructions:</strong> Select a note type below, then click anywhere on or around the staff to place notes. You can place notes on staff lines, in spaces, and above/below the staff. Drag notes to reposition them.
-    </div>
-    
-    <div class="toolbar">
-      <button class="note-btn active" data-note="whole">𝅝 Whole Note</button>
-      <button class="note-btn" data-note="half">𝅗𝅥 Half Note</button>
-      <button class="note-btn" data-note="quarter">♩ Quarter Note</button>
-    </div>
-    
-    <div class="staff-container" id="staffContainer">
-      <div class="staff">
-        <div class="treble-clef">𝄞</div>
-        <div class="staff-line" data-line="1"></div>
-        <div class="staff-line" data-line="2"></div>
-        <div class="staff-line" data-line="3"></div>
-        <div class="staff-line" data-line="4"></div>
-        <div class="staff-line" data-line="5"></div>
-      </div>
-    </div>
-    
-    <div class="controls">
-      <button class="clear-btn" onclick="clearAllNotes()">Clear All Notes</button>
-    </div>
-  </div>
-
-  <script>
-    let selectedNoteType = 'whole';
-    let noteCounter = 0;
-    
-    // Note symbols
-    const noteSymbols = {
-      whole: '𝅝',
-      half: '𝅗𝅥',
-      quarter: '♩'
-    };
-    
-    // Handle note type selection
-    document.querySelectorAll('.note-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.note-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        selectedNoteType = this.dataset.note;
-      });
-    });
-    
-    // Handle staff clicks to place notes
-    document.getElementById('staffContainer').addEventListener('click', function(e) {
-      if (e.target.classList.contains('note')) return;
-      
-      const rect = this.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      placeNote(x, y);
-    });
-    
-    function placeNote(x, y) {
-      const note = document.createElement('div');
-      note.className = `note ${selectedNoteType}`;
-      note.textContent = noteSymbols[selectedNoteType];
-      note.style.left = (x - 15) + 'px';
-      note.style.top = (y - 15) + 'px';
-      note.id = 'note-' + (++noteCounter);
-      
-      // Add ledger lines if note is above or below staff
-      addLedgerLinesIfNeeded(note, y);
-      
-      document.getElementById('staffContainer').appendChild(note);
-      
-      // Make note draggable
-      makeDraggable(note);
-    }
-    
-    function addLedgerLinesIfNeeded(note, y) {
-      const staffContainer = document.getElementById('staffContainer');
-      const staffHeight = 200; // Approximate staff height
-      const staffTop = staffContainer.offsetHeight / 2 - staffHeight / 2;
-      const staffBottom = staffContainer.offsetHeight / 2 + staffHeight / 2;
-      
-      // Add ledger lines above staff
-      if (y < staffTop - 20) {
-        const ledgerLine = document.createElement('div');
-        ledgerLine.className = 'ledger-line';
-        ledgerLine.style.left = (parseFloat(note.style.left) - 5) + 'px';
-        ledgerLine.style.top = (y - 1) + 'px';
-        staffContainer.appendChild(ledgerLine);
-      }
-      
-      // Add ledger lines below staff
-      if (y > staffBottom + 20) {
-        const ledgerLine = document.createElement('div');
-        ledgerLine.className = 'ledger-line';
-        ledgerLine.style.left = (parseFloat(note.style.left) - 5) + 'px';
-        ledgerLine.style.top = (y - 1) + 'px';
-        staffContainer.appendChild(ledgerLine);
-      }
-    }
-    
-    function makeDraggable(element) {
-      let isDragging = false;
-      let startX, startY, initialLeft, initialTop;
-      
-      element.addEventListener('mousedown', function(e) {
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        initialLeft = parseInt(element.style.left) || 0;
-        initialTop = parseInt(element.style.top) || 0;
-        
-        e.preventDefault();
-      });
-      
-      document.addEventListener('mousemove', function(e) {
-        if (!isDragging) return;
-        
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
-        
-        element.style.left = (initialLeft + deltaX) + 'px';
-        element.style.top = (initialTop + deltaY) + 'px';
-      });
-      
-      document.addEventListener('mouseup', function() {
-        isDragging = false;
-      });
-    }
-    
-    function clearAllNotes() {
-      const staffContainer = document.getElementById('staffContainer');
-      const notes = staffContainer.querySelectorAll('.note');
-      const ledgerLines = staffContainer.querySelectorAll('.ledger-line');
-      
-      notes.forEach(note => note.remove());
-      ledgerLines.forEach(line => line.remove());
-      
-      noteCounter = 0;
-    }
-    
-    // Prevent default drag behavior
-    document.addEventListener('dragstart', function(e) {
-      e.preventDefault();
-    });
-    
-    // Add keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-      switch(e.key) {
-        case '1':
-          document.querySelector('[data-note="whole"]').click();
-          break;
-        case '2':
-          document.querySelector('[data-note="half"]').click();
-          break;
-        case '3':
-          document.querySelector('[data-note="quarter"]').click();
-          break;
-        case 'c':
-        case 'C':
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            clearAllNotes();
-          }
-          break;
-      }
-    });
-  </script>
+  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
