@@ -1,6 +1,6 @@
 {
-    "name": "sheet_music_app",
-    "short_name": "sheet_music_app",
+    "name": "netflix",
+    "short_name": "netflix",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
